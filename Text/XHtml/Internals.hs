@@ -243,7 +243,7 @@ fixChar c | ord c < 0x80 = charUtf8 c
 fixChar c = mconcat ["&#", intDec (ord c), charUtf8 ';']
 
 textToHtmlString :: Text -> Builder
-textToHtmlString = Text.foldr (\c acc -> fixChar c <> acc) mempty
+textToHtmlString = Text.foldr' (\c acc -> fixChar c <> acc) mempty
 
 -- | This is not processed for special chars.
 -- use stringToHtml or lineToHtml instead, for user strings,
