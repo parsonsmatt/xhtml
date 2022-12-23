@@ -24,6 +24,7 @@ import Text.XHtml.Internals
 import Text.XHtml.Strict.Elements
 import Text.XHtml.Strict.Attributes
 import Text.XHtml.Extras
+import qualified Data.Text.Lazy as LText
 
 -- | The @DOCTYPE@ for XHTML 1.0 Strict.
 docType :: Builder
@@ -50,7 +51,7 @@ renderHtml = renderHtmlInternal docType
 -- | Outputs indented XHTML. Because space matters in
 --   HTML, the output is quite messy.
 renderHtmlWithLanguage :: HTML html
-                       => String -- ^ The code of the "dominant" language of the webpage.
+                       => LText.Text -- ^ The code of the "dominant" language of the webpage.
                        -> html -- ^ All the 'Html', including a header.
                        -> Builder
 renderHtmlWithLanguage l theHtml =

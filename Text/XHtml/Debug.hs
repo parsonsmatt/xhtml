@@ -11,6 +11,7 @@ import Text.XHtml.Extras
 import Text.XHtml.Table
 import Text.XHtml.Strict.Elements
 import Text.XHtml.Strict.Attributes
+import qualified Data.Text.Lazy as LText
 
 import Data.List (uncons)
 
@@ -25,7 +26,7 @@ data HtmlTree
       = HtmlLeaf Html
       | HtmlNode Html [HtmlTree] Html
 
-treeHtml :: [String] -> HtmlTree -> Html
+treeHtml :: [LText.Text] -> HtmlTree -> Html
 treeHtml colors h = table ! [
                     border 0,
                     cellpadding 0,
@@ -33,10 +34,10 @@ treeHtml colors h = table ! [
      where
       manycolors = scanr (:) []
 
-      treeHtmls :: [[String]] -> [HtmlTree] -> HtmlTable
+      treeHtmls :: [[LText.Text]] -> [HtmlTree] -> HtmlTable
       treeHtmls c ts = aboves (zipWith treeHtml' c ts)
 
-      treeHtml' :: [String] -> HtmlTree -> HtmlTable
+      treeHtml' :: [LText.Text] -> HtmlTree -> HtmlTable
       treeHtml' _ (HtmlLeaf leaf) = cell
                                          (td ! [width "100%"]
                                             << bold
@@ -65,7 +66,7 @@ instance HTML HtmlTree where
       toHtml x = treeHtml treeColors x
 
 -- type "length treeColors" to see how many colors are here.
-treeColors :: [String]
+treeColors :: [LText.Text]
 treeColors = ["#88ccff","#ffffaa","#ffaaff","#ccffff"] ++ treeColors
 
 
@@ -107,8 +108,8 @@ debugHtml obj = table ! [border 0] <<
               hd = xsmallFont << ("<" <> builderToString tag' <> args <> ">")
               tl = xsmallFont << ("</" <> builderToString tag' <> ">")
 
-bgcolor' :: String -> HtmlAttr
-bgcolor' c = thestyle ("background-color:" ++ c)
+bgcolor' :: LText.Text -> HtmlAttr
+bgcolor' c = thestyle ("background-color:" <> c)
 
 underline' :: Html -> Html
 underline' = thespan ! [thestyle ("text-decoration:underline")]

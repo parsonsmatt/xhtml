@@ -5,58 +5,59 @@
 module Text.XHtml.Strict.Attributes where
 
 import Text.XHtml.Internals
+import qualified Data.Text.Lazy as LText
 
 -- * Attributes in XHTML Strict
 
-action              :: String -> HtmlAttr
-align               :: String -> HtmlAttr
+action              :: LText.Text -> HtmlAttr
+align               :: LText.Text -> HtmlAttr
 
-alt                 :: String -> HtmlAttr
-altcode             :: String -> HtmlAttr
-archive             :: String -> HtmlAttr
-base                :: String -> HtmlAttr
+alt                 :: LText.Text -> HtmlAttr
+altcode             :: LText.Text -> HtmlAttr
+archive             :: LText.Text -> HtmlAttr
+base                :: LText.Text -> HtmlAttr
 border              :: Int    -> HtmlAttr
-bordercolor         :: String -> HtmlAttr
+bordercolor         :: LText.Text -> HtmlAttr
 cellpadding         :: Int    -> HtmlAttr
 cellspacing         :: Int    -> HtmlAttr
 checked             ::           HtmlAttr
-codebase            :: String -> HtmlAttr
-cols                :: String -> HtmlAttr
+codebase            :: LText.Text -> HtmlAttr
+cols                :: LText.Text -> HtmlAttr
 colspan             :: Int    -> HtmlAttr
-content             :: String -> HtmlAttr
-coords              :: String -> HtmlAttr
+content             :: LText.Text -> HtmlAttr
+coords              :: LText.Text -> HtmlAttr
 disabled            ::           HtmlAttr
-enctype             :: String -> HtmlAttr
-height              :: String -> HtmlAttr
-href                :: String -> HtmlAttr
-hreflang            :: String -> HtmlAttr
-httpequiv           :: String -> HtmlAttr
-identifier          :: String -> HtmlAttr
+enctype             :: LText.Text -> HtmlAttr
+height              :: LText.Text -> HtmlAttr
+href                :: LText.Text -> HtmlAttr
+hreflang            :: LText.Text -> HtmlAttr
+httpequiv           :: LText.Text -> HtmlAttr
+identifier          :: LText.Text -> HtmlAttr
 ismap               ::           HtmlAttr
-lang                :: String -> HtmlAttr
+lang                :: LText.Text -> HtmlAttr
 maxlength           :: Int    -> HtmlAttr
-method              :: String -> HtmlAttr
+method              :: LText.Text -> HtmlAttr
 multiple            ::           HtmlAttr
-name                :: String -> HtmlAttr
+name                :: LText.Text -> HtmlAttr
 nohref              ::           HtmlAttr
-rel                 :: String -> HtmlAttr
-rev                 :: String -> HtmlAttr
-rows                :: String -> HtmlAttr
+rel                 :: LText.Text -> HtmlAttr
+rev                 :: LText.Text -> HtmlAttr
+rows                :: LText.Text -> HtmlAttr
 rowspan             :: Int    -> HtmlAttr
-rules               :: String -> HtmlAttr
+rules               :: LText.Text -> HtmlAttr
 selected            ::           HtmlAttr
-shape               :: String -> HtmlAttr
-size                :: String -> HtmlAttr
-src                 :: String -> HtmlAttr
-theclass            :: String -> HtmlAttr
-thefor              :: String -> HtmlAttr
-thestyle            :: String -> HtmlAttr
-thetype             :: String -> HtmlAttr
-title               :: String -> HtmlAttr
-usemap              :: String -> HtmlAttr
-valign              :: String -> HtmlAttr
-value               :: String -> HtmlAttr
-width               :: String -> HtmlAttr
+shape               :: LText.Text -> HtmlAttr
+size                :: LText.Text -> HtmlAttr
+src                 :: LText.Text -> HtmlAttr
+theclass            :: LText.Text -> HtmlAttr
+thefor              :: LText.Text -> HtmlAttr
+thestyle            :: LText.Text -> HtmlAttr
+thetype             :: LText.Text -> HtmlAttr
+title               :: LText.Text -> HtmlAttr
+usemap              :: LText.Text -> HtmlAttr
+valign              :: LText.Text -> HtmlAttr
+value               :: LText.Text -> HtmlAttr
+width               :: LText.Text -> HtmlAttr
 
 action              =   strAttr "action"
 align               =   strAttr "align"

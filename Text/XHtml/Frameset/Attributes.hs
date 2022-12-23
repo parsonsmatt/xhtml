@@ -19,5 +19,5 @@ marginwidth         =   intAttr "marginwidth"
 noresize            ::           HtmlAttr
 noresize            = emptyAttr "noresize"
 
-scrolling           :: String -> HtmlAttr
+scrolling           :: LText -> HtmlAttr
 scrolling           =   strAttr "scrolling"

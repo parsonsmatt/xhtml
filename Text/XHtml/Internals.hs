@@ -1,6 +1,6 @@
 {-# OPTIONS_HADDOCK hide #-}
 
-{-# LANGUAGE OverloadedStrings, BangPatterns, RecordWildCards #-}
+{-# LANGUAGE OverloadedStrings, TypeOperators, FlexibleInstances, BangPatterns, RecordWildCards #-}
 
 -----------------------------------------------------------------------------
 -- |
@@ -20,8 +20,9 @@ module Text.XHtml.Internals
     , Builder
     ) where
 
-import qualified Data.Text as Text
+import qualified Data.Text.Lazy as LText
 import qualified Data.Text.Encoding as Text
+import qualified Data.Text.Lazy.Encoding as LText
 import qualified Data.ByteString.Lazy as BSL
 import Data.ByteString.Builder hiding (char7)
 import qualified Data.ByteString.Builder.Prim as P
@@ -33,6 +34,8 @@ import Data.Set (Set)
 import qualified Data.Set as Set
 import Data.Text (Text)
 import Data.Word (Word8)
+
+type LText = LText.Text
 
 infixr 2 +++  -- combining Html
 infixr 7 <<   -- nesting Html
@@ -69,7 +72,7 @@ getHtmlElements html = unHtml html []
 
 builderToString :: Builder -> String
 builderToString =
-    Text.unpack . Text.decodeUtf8 . BSL.toStrict . toLazyByteString
+    LText.unpack . LText.decodeUtf8 . toLazyByteString
 
 --
 -- * Classes
@@ -88,10 +91,12 @@ instance Show HtmlAttr where
 -- | @since 3000.2.2
 instance Sem.Semigroup Html where
     (<>) = (+++)
+    {-# INLINE (<>) #-}
 
 instance Mon.Monoid Html where
     mempty = noHtml
     mappend = (Sem.<>)
+    {-# INLINE mappend #-}
 
 -- | HTML is the class of things that can be validly put
 -- inside an HTML tag. So this can be one or more 'Html' elements,
@@ -126,6 +131,11 @@ instance HTML a => HTML (Maybe a) where
 instance HTML Text where
     toHtml "" = Html id
     toHtml xs = Html (HtmlString (textToHtmlString xs) :)
+    {-# INLINE toHtml #-}
+
+instance HTML LText.Text where
+    toHtml "" = Html id
+    toHtml xs = Html (HtmlString (lazyTextToHtmlString xs) : )
     {-# INLINE toHtml #-}
 
 mapDlist :: (a -> b) -> ([a] -> [a]) -> [b] -> [b]
@@ -235,12 +245,12 @@ emptyAttr s = HtmlAttr s s
 intAttr :: Builder -> Int -> HtmlAttr
 intAttr s i = HtmlAttr s (intDec i)
 
-strAttr :: Builder -> String -> HtmlAttr
-strAttr s t = HtmlAttr s (stringToHtmlString t)
+strAttr :: Builder -> LText.Text -> HtmlAttr
+strAttr s t = HtmlAttr s (lazyTextToHtmlString t)
+
 
 htmlAttr :: Builder -> Html -> HtmlAttr
 htmlAttr s t = HtmlAttr s (renderHtmlFragment t)
-
 
 {-
 foldHtml :: (String -> [HtmlAttr] -> [a] -> a)
@@ -282,6 +292,9 @@ charUtf8HtmlEscaped =
 textToHtmlString :: Text -> Builder
 textToHtmlString = Text.encodeUtf8BuilderEscaped wordHtmlEscaped
 {-# INLINE textToHtmlString #-}
+
+lazyTextToHtmlString :: LText.Text -> Builder
+lazyTextToHtmlString = LText.encodeUtf8BuilderEscaped wordHtmlEscaped
 
 -- | Copied from @blaze-builder@
 {-# INLINE wordHtmlEscaped #-}
