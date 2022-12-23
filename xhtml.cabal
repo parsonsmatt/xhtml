@@ -30,7 +30,7 @@ library
       , containers
 
     if impl(ghc >= 7.2)
-        Default-Extensions: Safe
+        -- Default-Extensions: Safe
 
     Build-depends: base >= 4 && < 5
     if impl(ghc >= 8.0)

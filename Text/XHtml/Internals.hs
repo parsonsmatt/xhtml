@@ -23,13 +23,16 @@ module Text.XHtml.Internals
 import qualified Data.Text as Text
 import qualified Data.Text.Encoding as Text
 import qualified Data.ByteString.Lazy as BSL
-import Data.ByteString.Builder
-import Data.Char
+import Data.ByteString.Builder hiding (char7)
+import qualified Data.ByteString.Builder.Prim as P
+import Data.ByteString.Builder.Prim hiding (intDec, charUtf8)
+import Data.ByteString.Internal (c2w)
 import qualified Data.Semigroup as Sem
 import qualified Data.Monoid as Mon
 import Data.Set (Set)
 import qualified Data.Set as Set
 import Data.Text (Text)
+import Data.Word (Word8)
 
 infixr 2 +++  -- combining Html
 infixr 7 <<   -- nesting Html
@@ -232,19 +235,53 @@ foldHtml f g (HtmlString  str)
 
 -- | Processing Strings into Html friendly things.
 stringToHtmlString :: String -> Builder
-stringToHtmlString = foldMap fixChar
+stringToHtmlString = primMapListBounded charUtf8HtmlEscaped
 
-fixChar :: Char -> Builder
-fixChar '<' = "&lt;"
-fixChar '>' = "&gt;"
-fixChar '&' = "&amp;"
-fixChar '"' = "&quot;"
-fixChar c | ord c < 0x80 = charUtf8 c
-fixChar c = mconcat ["&#", intDec (ord c), charUtf8 ';']
+-- | Copied from @blaze-builder@
+{-# INLINE charUtf8HtmlEscaped #-}
+charUtf8HtmlEscaped :: BoundedPrim Char
+charUtf8HtmlEscaped =
+    condB (>  '>' ) P.charUtf8 $
+    condB (== '<' ) (fixed4 ('&',('l',('t',';')))) $        -- &lt;
+    condB (== '>' ) (fixed4 ('&',('g',('t',';')))) $        -- &gt;
+    condB (== '&' ) (fixed5 ('&',('a',('m',('p',';'))))) $  -- &amp;
+    condB (== '"' ) (fixed5 ('&',('#',('3',('4',';'))))) $  -- &#34;
+    condB (== '\'') (fixed5 ('&',('#',('3',('9',';'))))) $  -- &#39;
+    (liftFixedToBounded P.char7)         -- fallback for Chars smaller than '>'
+  where
+    {-# INLINE fixed4 #-}
+    fixed4 x = liftFixedToBounded $ const x >$<
+      char7 >*< char7 >*< char7 >*< char7
+
+    {-# INLINE fixed5 #-}
+    fixed5 x = liftFixedToBounded $ const x >$<
+      char7 >*< char7 >*< char7 >*< char7 >*< char7
 
 textToHtmlString :: Text -> Builder
-textToHtmlString = Text.foldr' (\c acc -> fixChar c <> acc) mempty
+textToHtmlString = Text.encodeUtf8BuilderEscaped wordHtmlEscaped
 
+-- | Copied from @blaze-builder@
+{-# INLINE wordHtmlEscaped #-}
+wordHtmlEscaped :: P.BoundedPrim Word8
+wordHtmlEscaped =
+  P.condB (>  c2w '>' ) (P.condB (== c2w '\DEL') P.emptyB $ P.liftFixedToBounded P.word8) $
+  P.condB (== c2w '<' ) (fixed4 ('&',('l',('t',';')))) $        -- &lt;
+  P.condB (== c2w '>' ) (fixed4 ('&',('g',('t',';')))) $        -- &gt;
+  P.condB (== c2w '&' ) (fixed5 ('&',('a',('m',('p',';'))))) $  -- &amp;
+  P.condB (== c2w '"' ) (fixed6 ('&',('q',('u',('o',('t',';')))))) $  -- &quot;
+  P.condB (== c2w '\'') (fixed5 ('&',('#',('3',('9',';'))))) $  -- &#39;
+  P.condB (\c -> c >= c2w ' ' || c == c2w '\t' || c == c2w '\n' || c == c2w '\r')
+        (P.liftFixedToBounded P.word8) P.emptyB
+  where
+  {-# INLINE fixed4 #-}
+  fixed4 x = P.liftFixedToBounded $ const x P.>$<
+    P.char8 P.>*< P.char8 P.>*< P.char8 P.>*< P.char8
+  {-# INLINE fixed5 #-}
+  fixed5 x = P.liftFixedToBounded $ const x P.>$<
+    P.char8 P.>*< P.char8 P.>*< P.char8 P.>*< P.char8 P.>*< P.char8
+  {-# INLINE fixed6 #-}
+  fixed6 x = P.liftFixedToBounded $ const x P.>$<
+    P.char8 P.>*< P.char8 P.>*< P.char8 P.>*< P.char8 P.>*< P.char8 P.>*< P.char8
 -- | This is not processed for special chars.
 -- use stringToHtml or lineToHtml instead, for user strings,
 -- because they understand special chars, like @'<'@.
