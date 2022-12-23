@@ -36,10 +36,16 @@ docType = "<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Strict//EN\""
 showHtml :: HTML html => html -> Builder
 showHtml = showHtmlInternal docType
 
+{-# SPECIALIZE showHtml :: Html -> Builder #-}
+{-# INLINABLE showHtml #-}
+
 -- | Outputs indented HTML. Because space matters in
 --   HTML, the output is quite messy.
 renderHtml :: HTML html => html -> Builder
 renderHtml = renderHtmlInternal docType
+
+{-# SPECIALIZE renderHtml :: Html -> Builder #-}
+{-# INLINABLE renderHtml #-}
 
 -- | Outputs indented XHTML. Because space matters in
 --   HTML, the output is quite messy.

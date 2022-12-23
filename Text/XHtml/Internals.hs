@@ -312,10 +312,13 @@ primHtml :: String -> Html
 primHtml x | null x    = Html id
            | otherwise = Html (HtmlString (stringUtf8 x) :)
 
+{-# INLINE primHtml #-}
+
 -- | Does not process special characters, or check to see if it is empty.
 primHtmlNonEmptyBuilder :: Builder -> Html
 primHtmlNonEmptyBuilder x = Html (HtmlString x :)
 
+{-# INLINE primHtmlNonEmptyBuilder #-}
 
 --
 -- * Html Rendering
@@ -323,6 +326,9 @@ primHtmlNonEmptyBuilder x = Html (HtmlString x :)
 
 mkHtml :: HTML html => html -> Html
 mkHtml = (tag "html" ! [strAttr "xmlns" "http://www.w3.org/1999/xhtml"] <<)
+
+{-# SPECIALIZE mkHtml :: Html -> Html #-}
+{-# INLINABLE mkHtml #-}
 
 -- | Output the HTML without adding newlines or spaces within the markup.
 --   This should be the most time and space efficient way to
@@ -333,6 +339,10 @@ showHtmlInternal :: HTML html =>
 showHtmlInternal docType theHtml =
     docType <> showHtmlFragment (mkHtml theHtml)
 
+{-# SPECIALIZE showHtmlInternal :: Builder -> Html -> Builder #-}
+{-# INLINABLE showHtmlInternal #-}
+
+
 -- | Outputs indented HTML. Because space matters in
 --   HTML, the output is quite messy.
 renderHtmlInternal :: HTML html =>
@@ -340,6 +350,9 @@ renderHtmlInternal :: HTML html =>
                    -> html -> Builder
 renderHtmlInternal docType theHtml =
       docType <> "\n" <> renderHtmlFragment (mkHtml theHtml) <> "\n"
+
+{-# SPECIALIZE renderHtmlInternal :: Builder -> Html -> Builder #-}
+{-# INLINABLE renderHtmlInternal #-}
 
 -- | Outputs indented HTML, with indentation inside elements.
 --   This can change the meaning of the HTML document, and
@@ -356,14 +369,26 @@ prettyHtmlInternal docType theHtml =
 --   or root element. Does not add any extra whitespace.
 showHtmlFragment :: HTML html => html -> Builder
 showHtmlFragment h =
-    foldMap showHtml' $ getHtmlElements $ toHtml h
+    go $ getHtmlElements $ toHtml h
+  where
+    go [] = mempty
+    go (x : xs) = showHtml' x <> go xs
+
+{-# SPECIALIZE showHtmlFragment :: Html -> Builder #-}
+{-# INLINABLE showHtmlFragment #-}
 
 -- | Render a piece of indented HTML without adding a DOCTYPE declaration
 --   or root element. Only adds whitespace where it does not change
 --   the meaning of the document.
 renderHtmlFragment :: HTML html => html -> Builder
 renderHtmlFragment h =
-    foldMap (renderHtml' 0) $ getHtmlElements $ toHtml h
+    go $ getHtmlElements $ toHtml h
+  where
+    go [] = mempty
+    go (x:xs) = renderHtml' 0 x <> go xs
+
+{-# SPECIALIZE renderHtmlFragment :: Html -> Builder #-}
+{-# INLINABLE renderHtmlFragment #-}
 
 -- | Render a piece of indented HTML without adding a DOCTYPE declaration
 --   or a root element.
@@ -384,11 +409,12 @@ showHtml'(HtmlTag { markupTag = name,
                     markupAttrs = attrs })
     = if isValidHtmlITag name && isNoHtml html
       then renderTag True name (attrs []) ""
-      else mconcat
-        [ renderTag False name (attrs []) ""
-        , foldMap showHtml' (getHtmlElements html)
-        , renderEndTag name ""
-        ]
+      else renderTag False name (attrs []) ""
+        <> go (getHtmlElements html)
+        <> renderEndTag name ""
+  where
+    go [] = mempty
+    go (x:xs) = showHtml' x <> go xs
 
 renderHtml' :: Int -> HtmlElement -> Builder
 renderHtml' _ (HtmlString str) = str
@@ -435,7 +461,7 @@ renderTag empty name attrs nl
   where
       close = if empty then " />" else ">"
 
-      shownAttrs = foldMap (\attr -> charUtf8 ' ' <> showPair attr) attrs
+      shownAttrs = foldr (\attr acc -> charUtf8 ' ' <> showPair attr <> acc) mempty attrs
 
       showPair :: HtmlAttr -> Builder
       showPair (HtmlAttr key val)
