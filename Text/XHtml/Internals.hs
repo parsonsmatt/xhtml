@@ -104,24 +104,33 @@ class HTML a where
 
 instance HTML Html where
       toHtml a    = a
+      {-# INLINE toHtml #-}
+      toHtmlFromList htmls = Html (foldr (\x acc -> unHtml x . acc) id htmls)
+      {-# INLINE toHtmlFromList #-}
 
 instance HTML Char where
       toHtml       a = toHtml [a]
+      {-# INLINE toHtml #-}
       toHtmlFromList []  = Html id
       toHtmlFromList str = Html (HtmlString (stringToHtmlString str) :)
+      {-# INLINE toHtmlFromList #-}
 
 instance (HTML a) => HTML [a] where
       toHtml xs = toHtmlFromList xs
+      {-# INLINE toHtml #-}
 
 instance HTML a => HTML (Maybe a) where
       toHtml = maybe noHtml toHtml
+      {-# INLINE toHtml #-}
 
 instance HTML Text where
     toHtml "" = Html id
     toHtml xs = Html (HtmlString (textToHtmlString xs) :)
+    {-# INLINE toHtml #-}
 
 mapDlist :: (a -> b) -> ([a] -> [a]) -> [b] -> [b]
 mapDlist f as = (map f (as []) ++)
+{-# INLINE mapDlist #-}
 
 class ADDATTRS a where
       (!) :: a -> [HtmlAttr] -> a
@@ -132,6 +141,7 @@ class CHANGEATTRS a where
 
 instance (ADDATTRS b) => ADDATTRS (a -> b) where
       fn ! attr        = \ arg -> fn arg ! attr
+      {-# INLINE (!) #-}
 
 instance (CHANGEATTRS b) => CHANGEATTRS (a -> b) where
       changeAttrs fn f = \ arg -> changeAttrs (fn arg) f
@@ -148,6 +158,7 @@ instance ADDATTRS Html where
                         }
                 _ ->
                     html
+    {-# INLINE (!) #-}
 
 
 instance CHANGEATTRS Html where
@@ -169,19 +180,29 @@ instance CHANGEATTRS Html where
      -> b
 fn << arg = fn (toHtml arg)
 
+{-# SPECIALIZE (<<) :: (Html -> b) -> Html -> b #-}
+{-# SPECIALIZE (<<) :: (Html -> b) -> [Html] -> b #-}
+{-# INLINABLE (<<) #-}
 
 concatHtml :: (HTML a) => [a] -> Html
 concatHtml = Html . foldr (.) id . map (unHtml . toHtml)
+
+{-# SPECIALIZE concatHtml :: [Html] -> Html #-}
+{-# INLINABLE concatHtml #-}
 
 -- | Create a piece of HTML which is the concatenation
 --   of two things which can be made into HTML.
 (+++) :: (HTML a, HTML b) => a -> b -> Html
 a +++ b = Html (unHtml (toHtml a) . unHtml (toHtml b))
 
+{-# SPECIALIZE (+++) :: Html -> Html -> Html #-}
+{-# INLINABLE (+++) #-}
 
 -- | An empty piece of HTML.
 noHtml :: Html
 noHtml = Html id
+
+{-# INLINE noHtml #-}
 
 -- | Checks whether the given piece of HTML is empty. This materializes the
 -- list, so it's not great to do this a bunch.
@@ -236,6 +257,7 @@ foldHtml f g (HtmlString  str)
 -- | Processing Strings into Html friendly things.
 stringToHtmlString :: String -> Builder
 stringToHtmlString = primMapListBounded charUtf8HtmlEscaped
+{-# INLINE stringToHtmlString #-}
 
 -- | Copied from @blaze-builder@
 {-# INLINE charUtf8HtmlEscaped #-}
@@ -259,6 +281,7 @@ charUtf8HtmlEscaped =
 
 textToHtmlString :: Text -> Builder
 textToHtmlString = Text.encodeUtf8BuilderEscaped wordHtmlEscaped
+{-# INLINE textToHtmlString #-}
 
 -- | Copied from @blaze-builder@
 {-# INLINE wordHtmlEscaped #-}
