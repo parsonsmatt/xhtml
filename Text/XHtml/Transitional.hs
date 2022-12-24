@@ -14,6 +14,9 @@ module Text.XHtml.Transitional (
      -- * Rendering
      showHtml, renderHtml, prettyHtml,
      showHtmlFragment, renderHtmlFragment, prettyHtmlFragment,
+     -- * Re-exports
+     LText,
+     Builder,
      module Text.XHtml.Strict.Elements,
      module Text.XHtml.Frameset.Elements,
      module Text.XHtml.Transitional.Elements,

@@ -190,6 +190,9 @@ instance CHANGEATTRS Html where
      -> b
 fn << arg = fn (toHtml arg)
 
+{-# SPECIALIZE (<<) :: (Html -> b) -> String -> b #-}
+{-# SPECIALIZE (<<) :: (Html -> b) -> Text -> b #-}
+{-# SPECIALIZE (<<) :: (Html -> b) -> LText -> b #-}
 {-# SPECIALIZE (<<) :: (Html -> b) -> Html -> b #-}
 {-# SPECIALIZE (<<) :: (Html -> b) -> [Html] -> b #-}
 {-# INLINABLE (<<) #-}
@@ -243,11 +246,12 @@ emptyAttr :: Builder -> HtmlAttr
 emptyAttr s = HtmlAttr s s
 
 intAttr :: Builder -> Int -> HtmlAttr
-intAttr s i = HtmlAttr s (intDec i)
+intAttr s = \i -> HtmlAttr s (intDec i)
+{-# INLINE intAttr #-}
 
 strAttr :: Builder -> LText.Text -> HtmlAttr
-strAttr s t = HtmlAttr s (lazyTextToHtmlString t)
-
+strAttr s = \t -> HtmlAttr s (lazyTextToHtmlString t)
+{-# INLINE strAttr #-}
 
 htmlAttr :: Builder -> Html -> HtmlAttr
 htmlAttr s t = HtmlAttr s (renderHtmlFragment t)

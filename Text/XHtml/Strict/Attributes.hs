@@ -109,3 +109,53 @@ value               =   strAttr "value"
 width               =   strAttr "width"
 
 
+{-# INLINE action               #-}
+{-# INLINE align                #-}
+
+{-# INLINE alt                  #-}
+{-# INLINE altcode              #-}
+{-# INLINE archive              #-}
+{-# INLINE base                 #-}
+{-# INLINE border               #-}
+{-# INLINE bordercolor          #-}
+{-# INLINE cellpadding          #-}
+{-# INLINE cellspacing          #-}
+{-# INLINE checked              #-}
+{-# INLINE codebase             #-}
+{-# INLINE cols                 #-}
+{-# INLINE colspan              #-}
+{-# INLINE content              #-}
+{-# INLINE coords               #-}
+{-# INLINE disabled             #-}
+{-# INLINE enctype              #-}
+{-# INLINE height               #-}
+{-# INLINE href                 #-}
+{-# INLINE hreflang             #-}
+{-# INLINE httpequiv            #-}
+{-# INLINE identifier           #-}
+{-# INLINE ismap                #-}
+{-# INLINE lang                 #-}
+{-# INLINE maxlength            #-}
+{-# INLINE method               #-}
+{-# INLINE multiple             #-}
+{-# INLINE name                 #-}
+{-# INLINE nohref               #-}
+{-# INLINE rel                  #-}
+{-# INLINE rev                  #-}
+{-# INLINE rows                 #-}
+{-# INLINE rowspan              #-}
+{-# INLINE rules                #-}
+{-# INLINE selected             #-}
+{-# INLINE shape                #-}
+{-# INLINE size                 #-}
+{-# INLINE src                  #-}
+{-# INLINE theclass             #-}
+{-# INLINE thefor               #-}
+{-# INLINE thestyle             #-}
+{-# INLINE thetype              #-}
+{-# INLINE title                #-}
+{-# INLINE usemap               #-}
+{-# INLINE valign               #-}
+{-# INLINE value                #-}
+{-# INLINE width                #-}
+
